@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
 import {
   BadRequestException,
@@ -12,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from '../users/user.services';
 import { CreateUserDTO } from '../users/domain/dto/createUser.dto';
 import { AuthRegisterDTO } from './domain/dto/authRegister.dto';
+import { AuthResetPasswordDTO } from './domain/dto/authResetPassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -53,6 +57,17 @@ export class AuthService {
       role: body.role ?? Role.USER,
     };
     const user = await this.userService.create(newUser);
+
+    return await this.generateJwtToken(user);
+  }
+
+  async resetPassword({ token, password }: AuthResetPasswordDTO) {
+    const { valid, decoded } = await this.jwtService.verifyAsync(token);
+
+    if (!valid) throw new UnauthorizedException('Invalid or expired token');
+
+    const user = await this.userService.update(decoded.sub, { password });
+
     return await this.generateJwtToken(user);
   }
 }
