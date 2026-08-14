@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { UserService } from 'src/modules/users/user.services';
 
@@ -13,9 +15,11 @@ export class AuthGuard implements CanActivate {
     private readonly userService: UserService,
   ) {}
 
-  async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
-    const { authorization } = request.headers;
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: unknown }>();
+    const authorization = request.headers.authorization;
 
     if (!authorization || !authorization.startsWith('Bearer ')) return false;
 
@@ -23,7 +27,8 @@ export class AuthGuard implements CanActivate {
 
     const { valid, decoded } = await this.authService.validateToken(token);
 
-    if (!valid || !decoded || !decoded.sub) return false;
+    if (!valid || !decoded || decoded.sub === undefined)
+      throw new UnauthorizedException('Invalid token');
 
     const user = await this.userService.show(Number(decoded.sub));
 

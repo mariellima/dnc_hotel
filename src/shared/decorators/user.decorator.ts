@@ -1,21 +1,30 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   createParamDecorator,
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
 
+type RequestWithUser = {
+  user?: Record<string, unknown>;
+};
+
 export const User = createParamDecorator(
-  (filter: string, context: ExecutionContext) => {
-    const user = context.switchToHttp().getRequest().user;
+  (filter?: string, context?: ExecutionContext) => {
+    const request = context?.switchToHttp().getRequest<RequestWithUser>();
+    const user = request?.user;
+
+    if (!user) {
+      return undefined;
+    }
 
     if (filter) {
-      if (!user[filter]) {
+      const value = user[filter];
+
+      if (value === undefined) {
         throw new NotFoundException(`User ${filter} not found`);
       }
-      return user[filter];
+
+      return value;
     }
 
     return user;
