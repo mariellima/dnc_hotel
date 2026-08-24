@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { forwardRef, Module } from '@nestjs/common';
 import { UserController } from './user.controllers';
 import { UserService } from './user.services';
