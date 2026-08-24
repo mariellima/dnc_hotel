@@ -21,19 +21,22 @@ model User {
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  hotels    Hotel[]
 
   @@map("users")
 }
 
 model Hotel {
-  id        Int      @id @default(autoincrement())
-  name      String
+  id          Int      @id @default(autoincrement())
+  name        String
   description String
-  address   String
-  image     String?
-  price     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  address     String
+  image       String?
+  price       Float
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("hotels")
 }
