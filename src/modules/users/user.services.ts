@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   BadRequestException,
   Injectable,
@@ -9,6 +10,8 @@ import { UpdateUserDTO } from './domain/dto/updateUser.dto';
 import { CreateUserDTO } from './domain/dto/createUser.dto';
 import * as bcrypt from 'bcrypt';
 import { userSelectFields } from 'prisma/utils/userSelectFields';
+import path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -63,6 +66,36 @@ export class UserService {
     return await this.prisma.user.findUnique({
       where: { email },
     });
+  }
+
+  async uploadAvatar(id: number, avatarFilename: string) {
+    await this.isIdExists(id);
+
+    const directory = path.resolve(__dirname, '..', '..', 'uploads');
+
+    const user = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.avatar) {
+      const oldAvatarPath = path.join(directory, user.avatar);
+
+      try {
+        fs.statSync(oldAvatarPath);
+        fs.unlinkSync(oldAvatarPath);
+      } catch (error) {
+        console.error('Error deleting old avatar:', error);
+      }
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { avatar: avatarFilename },
+    });
+
+    return updatedUser;
   }
 
   private async isIdExists(id: number) {
