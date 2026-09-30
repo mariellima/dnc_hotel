@@ -10,4 +10,5 @@ export interface IHotelRepository {
   updateHotel(id: number, data: UpdateHotelDto): Promise<Hotel>;
   deleteHotel(id: number): Promise<Hotel>;
   findHotelByOwner(ownerId: number): Promise<Hotel[]>;
+  countHotels(): Promise<number>;
 }
