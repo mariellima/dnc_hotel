@@ -12,43 +12,55 @@ enum Role {
   ADMIN
 }
 
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  CANCELLED
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  role      Role     @default(USER)
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  hotels    Hotel[]
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String
+  password     String
+  role         Role          @default(USER)
+  avatar       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  hotels       Hotel[]
+  reservations Reservation[]
 
   @@map("users")
 }
 
 model Hotel {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  address     String
-  image       String?
-  price       Float
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String
+  address      String
+  image        String?
+  price        Float
+  owner        User          @relation(fields: [ownerId], references: [id])
+  ownerId      Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
 
   @@map("hotels")
 }
 
 model Reservation {
-  id        Int      @id @default(autoincrement())
+  id        Int               @id @default(autoincrement())
+  userId    Int
+  hotelId   Int
+  user      User              @relation(fields: [userId], references: [id])
+  hotel     Hotel             @relation(fields: [hotelId], references: [id])
   checkIn   DateTime
   checkOut  DateTime
   total     Float
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    ReservationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   @@map("reservations")
 }
