@@ -7,11 +7,19 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 @Injectable()
 export class ReservationRepository implements IReservationRepository {
   constructor(private readonly prisma: PrismaService) {}
-  findById(id: number): Promise<Reservation | null> {
-    return this.prisma.reservation.findUnique({ where: { id } });
-  }
-
   create(data: any): Promise<Reservation> {
     return this.prisma.reservation.create({ data });
+  }
+
+  findAll(): Promise<Reservation[]> {
+    return this.prisma.reservation.findMany();
+  }
+
+  findByUser(userId: number): Promise<Reservation[]> {
+    return this.prisma.reservation.findMany({ where: { userId } });
+  }
+
+  findById(id: number): Promise<Reservation | null> {
+    return this.prisma.reservation.findUnique({ where: { id } });
   }
 }
